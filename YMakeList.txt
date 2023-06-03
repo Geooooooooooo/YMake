@@ -1,0 +1,9 @@
+OUT_FILE yel
+OUT_DIR /home/VSProjects/YEL/bin/x86_64_GNU-Linux/
+
+CFILE /home/VSProjects/YEL/Errors/error.c
+CFILE /home/VSProjects/YEL/IO/io.c
+CFILE /home/VSProjects/YEL/Lexer/lexer.c
+CFILE /home/VSProjects/YEL/Parser/parser.c
+CFILE /home/VSProjects/YEL/Parser/syntaxer.c
+CFILE /home/VSProjects/YEL/Entry/main.c
