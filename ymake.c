@@ -1,6 +1,15 @@
 #include "header.h"
 
 int main(int argc, char* argv[]) {
+    if (argc == 2) {
+        to_lower_case(argv[1]);
+        if (__builtin_strcmp(argv[1], "init") == 0) {
+            system("mkdir ymake-bin");
+
+            return 0;
+        }
+    }
+
     char _CurrentWDir[256];
     if (getcwd(_CurrentWDir, sizeof(_CurrentWDir)) == NULL) {
        perror("getcwd() error");
@@ -21,14 +30,29 @@ int main(int argc, char* argv[]) {
     }
 
     char tmp[1024];
+    char o_files[2048] = { 0 };
     sprintf(tmp, "%s%s", _CurrentWDir, list->OUT_FILE);
 
-    FILE* tmp_file = fopen(tmp, "r");
+    FILE* tmp_file = fopen(tmp, "rb");
     if (tmp_file == NULL) {
-        // compile all files
+        puts("Compile all files ...");
+        
+        for (size_t i = 0; i < list->LengthCFILES; i++) {
+            __builtin_strcpy(tmp, "");
+            sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, list->CFILES[i]);
+            sprintf(tmp, "gcc %s -o ymake-bin/%s.o -c", list->CFILES[i], list->CFILES[i]);
+            system(tmp);
+        }
+
+        char cmd[2048];
+        sprintf(cmd, "gcc -o %s/%s %s", list->OUT_DIR, list->OUT_FILE, o_files);
+
+        system(cmd);   
 
         goto _free;
     }
+
+    puts("Compile some files ...");
 
     // compare and compile last changet files
 
@@ -36,7 +60,6 @@ int main(int argc, char* argv[]) {
 
     struct stat attr;
     stat(tmp, &attr);
-
 
     
     for (size_t i = 0; i < list->LengthCFILES; i++) {

@@ -102,7 +102,7 @@ YMakeList* read_ymakelist(char* __YFile) {
                 return (YMakeList*)(0);
             }
         }
-        else if (__builtin_strcmp(word, "OUT_FILE") == 0) {
+        else if (__builtin_strcmp(word, "out_file") == 0) {
             if (cd->OUT_FILE != NULL) {
                 puts("Logical Error: reusing the OUT_FILE parameter\n");
                 return (YMakeList*)(0);

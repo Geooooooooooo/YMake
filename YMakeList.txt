@@ -1,4 +1,4 @@
 COMPILER gcc
 OUT_FILE test
 
-Cfile test.c
+CFILE test.c
