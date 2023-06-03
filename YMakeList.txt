@@ -1,9 +1,4 @@
-OUT_FILE yel
-OUT_DIR bin/x86_64_GNU-Linux/
+COMPILER gcc
+OUT_FILE test
 
-CFILE Errors/error.c
-CFILE IO/io.c
-CFILE Lexer/lexer.c
-CFILE Parser/parser.c
-CFILE Parser/syntaxer.c
-CFILE Entry/main.c
+Cfile test.c

@@ -6,8 +6,20 @@
 #include <limits.h>
 #include <dirent.h>
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+typedef enum __Compiler {
+    Invalid, 
+    GCC,    CC, 
+    GPP,    CLANG
+} Compiler;
 
 typedef struct __CompileDependencies {
+    Compiler    cmpl;
     char        *OUT_FILE;
     char        *OUT_DIR;
     char        **CFILES;
@@ -17,5 +29,6 @@ typedef struct __CompileDependencies {
 void next_word(char*, char*, size_t*, size_t);
 YMakeList* read_ymakelist(char*);
 char* read_file(char*);
+void to_lower_case(char*);
 
 #endif //__HEADER_H__

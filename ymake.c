@@ -16,18 +16,48 @@ int main(int argc, char* argv[]) {
 
     YMakeList* list = read_ymakelist(__YFile);
 
-    puts("CFILES:");
+    if (list->OUT_DIR == NULL) {
+        list->OUT_DIR = _CurrentWDir;
+    }
+
+    char tmp[1024];
+    sprintf(tmp, "%s%s", _CurrentWDir, list->OUT_FILE);
+
+    FILE* tmp_file = fopen(tmp, "r");
+    if (tmp_file == NULL) {
+        // compile all files
+
+        goto _free;
+    }
+
+    // compare and compile last changet files
+
+    sprintf(tmp, "%sYMakeList.txt", _CurrentWDir);
+
+    struct stat attr;
+    stat(tmp, &attr);
+
+
+    
     for (size_t i = 0; i < list->LengthCFILES; i++) {
-        puts(list->CFILES[i]);
+        __builtin_strcpy(tmp, "");
+        sprintf(tmp, "%s%s",_CurrentWDir,  list->CFILES[i]);
+        
+        stat(tmp, &attr);
+
+        printf("Last modified of %s -> %d\n", list->CFILES[i], attr.st_ctime);
     }
 
-    printf("OUT_FILE: %s\nOUT_DIR: %s\n", list->OUT_FILE, list->OUT_DIR);
+    //sha512sum test.c | awk {'print $1'}
+    //FILE* 
 
-    while (list->LengthCFILES) {
-        __builtin_free(list->CFILES[list->LengthCFILES]);
-        --list->LengthCFILES;
-    }
-    __builtin_free(list->OUT_DIR);
+_free:
+    for (size_t i = 0; i < list->LengthCFILES; i++)
+        __builtin_free(list->CFILES[i]);
+    
+    if (_CurrentWDir != list->OUT_DIR)
+        __builtin_free(list->OUT_DIR);
+
     __builtin_free(list->OUT_FILE);
     __builtin_free(list);
 

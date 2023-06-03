@@ -62,6 +62,7 @@ YMakeList* read_ymakelist(char* __YFile) {
         return (YMakeList*)(0);
     }
 
+    cd->cmpl = -2;
     cd->LengthCFILES = 0;
     cd->OUT_FILE = NULL;
     cd->OUT_DIR = NULL;
@@ -73,8 +74,35 @@ YMakeList* read_ymakelist(char* __YFile) {
 
     while (cntr < sz) {
         next_word(__YFile, word, &cntr, sz);
+        to_lower_case(word);
 
-        if (__builtin_strcmp(word, "OUT_FILE") == 0) {
+        if (__builtin_strcmp(word, "compiler") == 0) {
+            if (cd->cmpl != -2) {
+                puts("Logical Error: reusing the COMPILER parameter\n");
+                return (YMakeList*)(0);
+            }
+
+            next_word(__YFile, word, &cntr, sz);
+            to_lower_case(word);
+
+            if (__builtin_strcmp(word, "gcc") == 0) {
+                cd->cmpl = GCC;
+            }
+            else if (__builtin_strcmp(word, "cc") == 0) {
+                cd->cmpl = CC;
+            }
+            else if (__builtin_strcmp(word, "g++") == 0) {
+                cd->cmpl = GPP;
+            }
+            else if (__builtin_strcmp(word, "clang") == 0) {
+                cd->cmpl = CLANG;
+            }
+            else {
+                printf("Parameter Error: invalid argument for COMPILER %s\n", word);
+                return (YMakeList*)(0);
+            }
+        }
+        else if (__builtin_strcmp(word, "OUT_FILE") == 0) {
             if (cd->OUT_FILE != NULL) {
                 puts("Logical Error: reusing the OUT_FILE parameter\n");
                 return (YMakeList*)(0);
@@ -92,7 +120,7 @@ YMakeList* read_ymakelist(char* __YFile) {
             for (l = 0; l < tmp_sz; l++) cd->OUT_FILE[l] = word[l];
             cd->OUT_FILE[l++] = 0;
         }
-        else if (__builtin_strcmp(word, "OUT_DIR") == 0) {
+        else if (__builtin_strcmp(word, "out_dir") == 0) {
             if (cd->OUT_DIR != NULL) {
                 puts("Logical Error: reusing the OUT_DIR parameter\n");
                 return (YMakeList*)(0);
@@ -110,7 +138,7 @@ YMakeList* read_ymakelist(char* __YFile) {
             for (l = 0; l < tmp_sz; l++) cd->OUT_DIR[l] = word[l];
             cd->OUT_DIR[l] = 0;
         }
-        else if (__builtin_strcmp(word, "CFILE") == 0) {
+        else if (__builtin_strcmp(word, "cfile") == 0) {
             next_word(__YFile, word, &cntr, sz);
 
             register size_t tmp_sz = strlen(word);
@@ -129,5 +157,16 @@ YMakeList* read_ymakelist(char* __YFile) {
         }
     }
 
+    if (cd->cmpl == -2) {
+        cd->cmpl = (Compiler)GPP;
+    }
+
     return cd;
+}
+
+void to_lower_case(char* str) {
+    register size_t len = strlen(str);
+    for (register size_t i = 0; i < len; ++i) {
+        str[i] = tolower(str[i]);
+    }
 }
