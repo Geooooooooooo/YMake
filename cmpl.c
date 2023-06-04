@@ -62,7 +62,7 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
     }
 
     fclose(tmp_file);
-    sprintf(tmp, "%s/%s", _CurrentWDir, list->OUT_FILE);
+    sprintf(tmp, "%s/%s", list->OUT_DIR, list->OUT_FILE);
 
     struct stat st;
     stat(tmp, &st);
