@@ -152,7 +152,16 @@ YMakeList* read_ymakelist(char* __YFile) {
         }
         else if (__builtin_strcmp(word, "cfiles") == 0) {
             next_word(__YFile, word, &cntr, sz);
+            char inc_folder[256] = { 0 };
 
+            to_lower_case(word);
+            if (__builtin_strcmp(word, "in") == 0) {
+                next_word(__YFile, word, &cntr, sz);
+                __builtin_strcpy(inc_folder, word);
+
+                next_word(__YFile, word, &cntr, sz);
+            }
+            
             if (__builtin_strcmp(word, "{") != 0) {
                 printf("Error: Expected '{' after CFILES\n");
                 return cd;
@@ -160,7 +169,7 @@ YMakeList* read_ymakelist(char* __YFile) {
 
             next_word(__YFile, word, &cntr, sz);
             while (__builtin_strcmp(word, "}") != 0) {
-                register size_t tmp_sz = strlen(word);
+                register size_t tmp_sz = strlen(word) + strlen(inc_folder);
                 cd->CFILES = (char**)__builtin_realloc(cd->CFILES, (cd->LengthCFILES+2) * sizeof(char**));
 
                 cd->CFILES[cd->LengthCFILES] = (char*)__builtin_malloc(tmp_sz * sizeof(char));
@@ -168,8 +177,13 @@ YMakeList* read_ymakelist(char* __YFile) {
                     puts("MemoryAllocationError");
                     return (YMakeList*)(0);
                 }
-
-                for (l = 0; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = word[l];
+                
+                tmp_sz -= strlen(word);
+                for (l = 0; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = inc_folder[l];
+                
+                size_t k = 0;
+                tmp_sz += strlen(word);
+                for (; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = word[k++];
                 cd->CFILES[cd->LengthCFILES][l] = 0;
 
                 ++cd->LengthCFILES;

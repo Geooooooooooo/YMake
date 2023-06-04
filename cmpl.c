@@ -1,6 +1,27 @@
 #include "cmpl.h"
 
-void compile_gcc(YMakeList* list, char* _CurrentWDir) {
+char* cstr(char* s) {
+    register size_t tmp_ln = strlen(s);
+    while (tmp_ln) {
+        if (s[tmp_ln] == '/') s[tmp_ln] = '-';
+        --tmp_ln;
+    }
+    return s;
+}
+
+void compile_gxx(YMakeList* list, char* _CurrentWDir) {
+    char comp[8] = { 0 };
+    char clean_file[256] = { 0 };
+    if (list->cmpl == GCC) {
+        __builtin_strcpy(comp, "gcc");
+    }
+    else if (list->cmpl == GPP) {
+        __builtin_strcpy(comp, "g++");
+    }
+    else if (list->cmpl == CC) {
+        __builtin_strcpy(comp, "cc");
+    }
+
     char* tmp = (char*)__builtin_malloc(2048 * sizeof(char));
     if (tmp == NULL) 
         return;
@@ -14,19 +35,23 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
 
     sprintf(tmp, "%s/%s", _CurrentWDir, list->OUT_FILE);
 
-    printf("Assembly started ...\n");
+    printf("Assembly started (%s) ...\n", comp);
 
     FILE* tmp_file = fopen(tmp, "rb");
     if (tmp_file == NULL) {
         for (size_t i = 0; i < list->LengthCFILES; i++) {
             printf("\nCompile %s", list->CFILES[i]);
-            sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, list->CFILES[i]);
-            sprintf(tmp, "gcc %s -o ymake-bin/%s.o -c", list->CFILES[i], list->CFILES[i]);
+
+            strcpy(clean_file, list->CFILES[i]);
+            sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
+            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c", comp, clean_file, cstr(list->CFILES[i]));
+
             system(tmp);
         }
 
         char cmd[2048];
-        sprintf(cmd, "gcc -o %s/%s %s", list->OUT_DIR, list->OUT_FILE, o_files);
+        sprintf(cmd, "%s -o %s/%s %s", comp, list->OUT_DIR, list->OUT_FILE, o_files);
+
         system(cmd);  
 
         puts("");
@@ -43,20 +68,22 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
     long _LastAppMod = st.st_mtime;
     
     for (size_t i = 0; i < list->LengthCFILES; i++) {
-        sprintf(tmp, "%s/%s", _CurrentWDir,  list->CFILES[i]);
+        sprintf(tmp, "%s/%s", _CurrentWDir, list->CFILES[i]);
 
         stat(tmp, &st);
 
         if (st.st_mtime > _LastAppMod) {
             printf("Compile %s\n", list->CFILES[i]);
-            sprintf(tmp, "gcc %s -o ymake-bin/%s.o -c", list->CFILES[i], list->CFILES[i]);
+
+            strcpy(clean_file, list->CFILES[i]);
+            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c", comp, clean_file, cstr(list->CFILES[i]));
             system(tmp);
         }
 
-        sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, list->CFILES[i]);
+        sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
     }
 
-    sprintf(tmp, "rm %s && gcc -o %s/%s %s", list->OUT_FILE, list->OUT_DIR, list->OUT_FILE, o_files);
+    sprintf(tmp, "rm %s && %s -o %s/%s %s", list->OUT_FILE, comp, list->OUT_DIR, list->OUT_FILE, o_files);
     system(tmp); 
 
 _end:

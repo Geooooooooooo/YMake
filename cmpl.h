@@ -3,6 +3,6 @@
 
 #include "header.h"
 
-void compile_gcc(YMakeList*, char*);
+void compile_gxx(YMakeList*, char*);
 
 #endif //__CMPL_H__

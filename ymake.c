@@ -35,8 +35,8 @@ int main(int argc, char* argv[]) {
         list->OUT_DIR = _CurrentWDir;
     }
 
-    if (list->cmpl == GCC) {
-        compile_gcc(list, _CurrentWDir);
+    if (list->cmpl == GCC || list->cmpl == GPP || list->cmpl == CC) {
+        compile_gxx(list, _CurrentWDir);
     }
     else {
         printf("Compiler not found or not supported\n\n");

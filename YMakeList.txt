@@ -1,6 +1,6 @@
 COMPILER GCC
 
-CFILES { 
+CFILES IN folder/a/ { 
     main.c
     lib.c
 }
