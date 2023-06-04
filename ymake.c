@@ -1,4 +1,4 @@
-#include "header.h"
+#include "cmpl.h"
 
 int main(int argc, char* argv[]) {
     if (argc == 2) {
@@ -28,51 +28,10 @@ int main(int argc, char* argv[]) {
     if (list->OUT_DIR == NULL) {
         list->OUT_DIR = _CurrentWDir;
     }
-
-    char tmp[1024];
-    char o_files[2048] = { 0 };
-    sprintf(tmp, "%s%s", _CurrentWDir, list->OUT_FILE);
-
-    FILE* tmp_file = fopen(tmp, "rb");
-    if (tmp_file == NULL) {
-        puts("Compile all files ...");
-        
-        for (size_t i = 0; i < list->LengthCFILES; i++) {
-            __builtin_strcpy(tmp, "");
-            sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, list->CFILES[i]);
-            sprintf(tmp, "gcc %s -o ymake-bin/%s.o -c", list->CFILES[i], list->CFILES[i]);
-            system(tmp);
-        }
-
-        char cmd[2048];
-        sprintf(cmd, "gcc -o %s/%s %s", list->OUT_DIR, list->OUT_FILE, o_files);
-
-        system(cmd);   
-
-        goto _free;
-    }
-
-    puts("Compile some files ...");
-
-    // compare and compile last changet files
-
-    sprintf(tmp, "%sYMakeList.txt", _CurrentWDir);
-
-    struct stat attr;
-    stat(tmp, &attr);
-
     
-    for (size_t i = 0; i < list->LengthCFILES; i++) {
-        __builtin_strcpy(tmp, "");
-        sprintf(tmp, "%s%s",_CurrentWDir,  list->CFILES[i]);
-        
-        stat(tmp, &attr);
-
-        printf("Last modified of %s -> %d\n", list->CFILES[i], attr.st_ctime);
+    if (list->cmpl == GCC) {
+        compile_gcc(list, _CurrentWDir);
     }
-
-    //sha512sum test.c | awk {'print $1'}
-    //FILE* 
 
 _free:
     for (size_t i = 0; i < list->LengthCFILES; i++)

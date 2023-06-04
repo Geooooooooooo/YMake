@@ -1,4 +1,4 @@
 COMPILER gcc
-OUT_FILE test
+OUT_FILE MyAppName
 
 CFILE test.c
