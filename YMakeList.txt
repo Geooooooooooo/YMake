@@ -1,5 +1,8 @@
-COMPILER    GCC
-OUT_FILE    app
+COMPILER GCC
 
-CFILE main.c
-CFILE lib.c
+CFILES { 
+    main.c
+    lib.c
+}
+
+OUT_FILE app

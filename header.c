@@ -3,14 +3,30 @@
 inline void next_word(char* str, char* target, size_t* counter, size_t sz) {
     __builtin_strcpy(target, "");
 
+    size_t cntr = 0;
+
     while (str[*counter] == ' ' || str[*counter] == '\n') 
         ++(*counter);
+
+    if (str[*counter] == '{' || str[*counter] == '}') {
+        target[cntr] = str[*counter];
+        target[++cntr] = 0;
+        ++(*counter);
+
+        return;
+    }
+    else if (str[*counter] == '#') {
+        while (str[*counter] != '\n' && str[*counter] != '\0') {
+            ++(*counter);
+        } 
+        
+        ++(*counter);
+    }
     
-    size_t cntr = 0;
     for (; *counter < sz; (*counter)++) {
-        if (str[*counter] == ' ' || str[*counter] == '\n') {
+        if (str[*counter] == ' ' || str[*counter] == '\n' || str[*counter] == '\0' || str[*counter] == '{' || str[*counter] == '}') {
              target[cntr] = 0;
-            while (str[*counter] == ' ' || str[*counter] == '\n') 
+            while (str[*counter] == ' ' || str[*counter] == '\n' || str[*counter] == '\0') 
                 ++(*counter);
             return;
         }
@@ -73,7 +89,7 @@ YMakeList* read_ymakelist(char* __YFile) {
     size_t l;
 
     while (cntr < sz) {
-        next_word(__YFile, word, &cntr, sz);
+        next_word(__YFile, word, &cntr, sz);            
         to_lower_case(word);
 
         if (__builtin_strcmp(word, "compiler") == 0) {
@@ -134,22 +150,36 @@ YMakeList* read_ymakelist(char* __YFile) {
             for (l = 0; l < tmp_sz; l++) cd->OUT_DIR[l] = word[l];
             cd->OUT_DIR[l] = 0;
         }
-        else if (__builtin_strcmp(word, "cfile") == 0) {
+        else if (__builtin_strcmp(word, "cfiles") == 0) {
             next_word(__YFile, word, &cntr, sz);
 
-            register size_t tmp_sz = strlen(word);
-            cd->CFILES = (char**)__builtin_realloc(cd->CFILES, (cd->LengthCFILES+2) * sizeof(char**));
-
-            cd->CFILES[cd->LengthCFILES] = (char*)__builtin_malloc(tmp_sz * sizeof(char));
-            if (cd->CFILES[cd->LengthCFILES] == NULL) {
-                puts("MemoryAllocationError");
-                return (YMakeList*)(0);
+            if (__builtin_strcmp(word, "{") != 0) {
+                printf("Error: Expected '{' after CFILES\n");
+                return cd;
             }
 
-            for (l = 0; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = word[l];
-            cd->CFILES[cd->LengthCFILES][l] = 0;
+            next_word(__YFile, word, &cntr, sz);
+            while (__builtin_strcmp(word, "}") != 0) {
+                register size_t tmp_sz = strlen(word);
+                cd->CFILES = (char**)__builtin_realloc(cd->CFILES, (cd->LengthCFILES+2) * sizeof(char**));
 
-            ++cd->LengthCFILES;
+                cd->CFILES[cd->LengthCFILES] = (char*)__builtin_malloc(tmp_sz * sizeof(char));
+                if (cd->CFILES[cd->LengthCFILES] == NULL) {
+                    puts("MemoryAllocationError");
+                    return (YMakeList*)(0);
+                }
+
+                for (l = 0; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = word[l];
+                cd->CFILES[cd->LengthCFILES][l] = 0;
+
+                ++cd->LengthCFILES;
+                
+                next_word(__YFile, word, &cntr, sz);
+            }
+        }
+        else {
+            printf("Error: unknow parameter: %s\n", word);
+            return cd;
         }
     }
 
