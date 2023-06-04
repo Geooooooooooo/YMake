@@ -36,7 +36,10 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
 
     sprintf(tmp, "%s/%s", list->OUT_DIR, list->OUT_FILE);
 
-    printf("Assembly started (%s) ...\n", comp);
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    fprintf(list->logs, "Assembly started (%s) ... %d-%02d-%02d %02d:%02d:%02d\n", 
+        comp, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
     FILE* tmp_file = fopen(tmp, "rb");
     if (tmp_file == NULL) {
@@ -56,7 +59,7 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
 
         errors += system(cmd); 
 
-        puts("");
+        fputs("", list->logs);
 
        goto _end;
     }
@@ -75,7 +78,7 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
         stat(tmp, &st);
 
         if (st.st_mtime > _LastAppMod) {
-            printf("Compile %s\n", list->CFILES[i]);
+            fprintf(list->logs, "Compile %s\n", list->CFILES[i]);
 
             strcpy(clean_file, list->CFILES[i]);
             sprintf(tmp, "%s %s -o ymake-bin/%s.o -c", comp, clean_file, cstr(list->CFILES[i]));
@@ -91,7 +94,7 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
 
 _end:
     if (!errors)
-        printf("\nOutput file --> %s/%s\n", list->OUT_DIR, list->OUT_FILE);
+        fprintf(list->logs, "\nOutput file --> %s/%s\n", list->OUT_DIR, list->OUT_FILE);
 
     __builtin_free(tmp); 
     __builtin_free(o_files);

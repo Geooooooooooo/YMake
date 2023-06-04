@@ -35,16 +35,29 @@ int main(int argc, char* argv[]) {
         list.OUT_DIR = _CurrentWDir;
     }
 
+    if (list.OUT_FILE == NULL) {
+        fprintf(list.logs, "Warning: The output file is not specified, by default (y.out)\n\n");
+        list.OUT_FILE = (char*)malloc(6 * sizeof(char));
+
+        __builtin_strcpy(list.OUT_FILE, "y.out");
+    } 
+
+    if (list.CFILES == NULL) {
+        fprintf(list.logs, "Error: No source file is specified\n");
+        goto _free;
+    }
+
     if (list.cmpl == GCC || list.cmpl == GPP || list.cmpl == CC) {
         compile_gxx(&list, _CurrentWDir);
     }
     else {
-        printf("Compiler not found or not supported\n\n");
+        fprintf(list.logs, "Error: Compiler not found or not supported\n");
     }
 
 _free:
-    for (size_t i = 0; i < list.LengthCFILES; i++)
-        __builtin_free(list.CFILES[i]);
+    if (list.CFILES != NULL)   
+        for (size_t i = 0; i < list.LengthCFILES; i++)
+            __builtin_free(list.CFILES[i]);
     
     if (_CurrentWDir != list.OUT_DIR)
         __builtin_free(list.OUT_DIR);

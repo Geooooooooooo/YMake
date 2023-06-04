@@ -1,12 +1,10 @@
 COMPILER GCC
+LOGS log.txt
 
-CFILES IN folder/a/ { 
-    main.c
-    lib.c
+CFILES {
+    cmpl.c 
+    header.c 
+    ymake.c 
 }
 
-CFILES IN folder/ {
-    te.c
-}
-
-OUT_FILE app
+OUT_FILE ymake

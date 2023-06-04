@@ -67,17 +67,14 @@ char* read_file(char* filename) {
 
 YMakeList read_ymakelist(char* __YFile) {
     YMakeList cd;
+    _Bool firstAlloc = 1;
 
-    cd.CFILES = (char**)__builtin_malloc(2 * sizeof(char**)); 
-    if (cd.CFILES == NULL) {
-        puts("MemoryAllocationError");
-        return cd;
-    }
-
+    cd.logs = stdout;
     cd.cmpl = -2;
     cd.LengthCFILES = 0;
     cd.OUT_FILE = NULL;
     cd.OUT_DIR = NULL;
+    cd.CFILES = NULL;
 
     char word[1024];
     size_t sz = strlen(__YFile);
@@ -109,6 +106,15 @@ YMakeList read_ymakelist(char* __YFile) {
                 printf("Parameter Error: invalid argument for COMPILER %s\n", word);
                 return cd;
             }
+        }
+        else if (__builtin_strcmp(word, "logs") == 0) {
+            if (cd.logs != stdout) {
+                printf("Warning: re-specification of the logging parameter\n");
+            }
+
+            next_word(__YFile, word, &cntr, sz);
+
+            cd.logs = fopen(word, "w+");
         }
         else if (__builtin_strcmp(word, "out_file") == 0) {
             if (cd.OUT_FILE != NULL) {
@@ -167,7 +173,17 @@ YMakeList read_ymakelist(char* __YFile) {
             while (__builtin_strcmp(word, "}") != 0) {
                 register size_t tmp_sz = strlen(word) + strlen(inc_folder);
 
-                cd.CFILES = (char**)__builtin_realloc(cd.CFILES, (cd.LengthCFILES+2) * sizeof(char**));
+                if (firstAlloc) {
+                    cd.CFILES = (char**)__builtin_malloc(1 * sizeof(char**)); 
+                    if (cd.CFILES == NULL) {
+                        puts("MemoryAllocationError");
+                        return cd;
+                    }
+                    firstAlloc = 0;
+                }
+                else {
+                    cd.CFILES = (char**)__builtin_realloc(cd.CFILES, (cd.LengthCFILES+2) * sizeof(char**));
+                }
 
                 cd.CFILES[cd.LengthCFILES] = (char*)__builtin_malloc(tmp_sz * sizeof(char));
                 if (cd.CFILES[cd.LengthCFILES] == NULL) {
@@ -189,8 +205,10 @@ YMakeList read_ymakelist(char* __YFile) {
             }
         }
         else {
-            printf("Error: unknow parameter: %s\n", word);
-            return cd;
+            if (word[0] != ' ' && word[0] != '\n' && word[0] != '\0') {
+                printf("Error: unknow parameter: %s\n", word);
+                return cd;
+            }
         }
     }
 

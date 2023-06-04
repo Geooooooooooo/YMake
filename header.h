@@ -24,6 +24,7 @@ typedef struct __CompileDependencies {
     char        *OUT_DIR;
     char        **CFILES;
     unsigned long LengthCFILES;
+    FILE        *logs;
 } YMakeList;
 
 void next_word(char*, char*, size_t*, size_t);
