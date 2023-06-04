@@ -85,18 +85,14 @@ YMakeList* read_ymakelist(char* __YFile) {
             next_word(__YFile, word, &cntr, sz);
             to_lower_case(word);
 
-            if (__builtin_strcmp(word, "gcc") == 0) {
+            if (__builtin_strcmp(word, "gcc") == 0) 
                 cd->cmpl = GCC;
-            }
-            else if (__builtin_strcmp(word, "cc") == 0) {
+            else if (__builtin_strcmp(word, "cc") == 0) 
                 cd->cmpl = CC;
-            }
-            else if (__builtin_strcmp(word, "g++") == 0) {
+            else if (__builtin_strcmp(word, "g++") == 0) 
                 cd->cmpl = GPP;
-            }
-            else if (__builtin_strcmp(word, "clang") == 0) {
+            else if (__builtin_strcmp(word, "clang") == 0) 
                 cd->cmpl = CLANG;
-            }
             else {
                 printf("Parameter Error: invalid argument for COMPILER %s\n", word);
                 return (YMakeList*)(0);

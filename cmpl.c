@@ -1,16 +1,15 @@
 #include "cmpl.h"
 
 void compile_gcc(YMakeList* list, char* _CurrentWDir) {
-    char* tmp = (char*)malloc(2048 * sizeof(char));
-    if (tmp == NULL) {
+    char* tmp = (char*)__builtin_malloc(2048 * sizeof(char));
+    if (tmp == NULL) 
         return;
-    }
-    tmp[0] = 0;
 
-    char* o_files = (char*)malloc(2048 * sizeof(char));
-    if (o_files == NULL) {
+    char* o_files = (char*)__builtin_malloc(2048 * sizeof(char));
+    if (o_files == NULL)
         return;
-    }
+
+    tmp[0] = 0;
     o_files[0] = 0;
 
     sprintf(tmp, "%s/%s", _CurrentWDir, list->OUT_FILE);
@@ -56,6 +55,6 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
     sprintf(tmp, "rm %s && gcc -o %s/%s %s", list->OUT_FILE, list->OUT_DIR, list->OUT_FILE, o_files);
     system(tmp); 
 
-    free(tmp); 
-    free(o_files);
+    __builtin_free(tmp); 
+    __builtin_free(o_files);
 }

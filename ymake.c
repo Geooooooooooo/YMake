@@ -28,9 +28,12 @@ int main(int argc, char* argv[]) {
     if (list->OUT_DIR == NULL) {
         list->OUT_DIR = _CurrentWDir;
     }
-    
+
     if (list->cmpl == GCC) {
         compile_gcc(list, _CurrentWDir);
+    }
+    else {
+        printf("Compiler not found or not supported\n");
     }
 
 _free:
