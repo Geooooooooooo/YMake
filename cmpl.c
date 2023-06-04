@@ -14,11 +14,12 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
 
     sprintf(tmp, "%s/%s", _CurrentWDir, list->OUT_FILE);
 
-    printf("Start build ...\n");
+    printf("Assembly started ...\n");
 
     FILE* tmp_file = fopen(tmp, "rb");
     if (tmp_file == NULL) {
         for (size_t i = 0; i < list->LengthCFILES; i++) {
+            printf("\nCompile %s", list->CFILES[i]);
             sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, list->CFILES[i]);
             sprintf(tmp, "gcc %s -o ymake-bin/%s.o -c", list->CFILES[i], list->CFILES[i]);
             system(tmp);
@@ -28,7 +29,9 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
         sprintf(cmd, "gcc -o %s/%s %s", list->OUT_DIR, list->OUT_FILE, o_files);
         system(cmd);  
 
-        return; 
+        puts("");
+
+       goto _end;
     }
 
     fclose(tmp_file);
@@ -56,7 +59,8 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
     sprintf(tmp, "rm %s && gcc -o %s/%s %s", list->OUT_FILE, list->OUT_DIR, list->OUT_FILE, o_files);
     system(tmp); 
 
-    printf("Success!\nOutput file --> %s/%s\n", list->OUT_DIR, list->OUT_FILE);
+_end:
+    printf("\nOutput file --> %s/%s\n", list->OUT_DIR, list->OUT_FILE);
 
     __builtin_free(tmp); 
     __builtin_free(o_files);

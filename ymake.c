@@ -16,11 +16,18 @@ int main(int argc, char* argv[]) {
     }
 
     char* __YFile = read_file("YMakeList.txt");
-
     if (__YFile == (char*)(0)) {
         printf("No YMakeList in current directory!\n");
         return -1;
     }
+
+    DIR* dir = opendir("ymake-bin");
+    if (!dir) {
+        printf("Error: directory ymake-bin does not exist\nUse ymake init\n");
+
+        return -1;
+    }
+    closedir(dir);
 
     YMakeList* list = read_ymakelist(__YFile);
 

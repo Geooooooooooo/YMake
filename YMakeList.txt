@@ -1,6 +1,5 @@
 COMPILER    GCC
 OUT_FILE    app
-OUT_DIR     ymake-bin
 
 CFILE main.c
 CFILE lib.c
