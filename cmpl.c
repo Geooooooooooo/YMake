@@ -14,6 +14,8 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
 
     sprintf(tmp, "%s/%s", _CurrentWDir, list->OUT_FILE);
 
+    printf("Start build ...\n");
+
     FILE* tmp_file = fopen(tmp, "rb");
     if (tmp_file == NULL) {
         for (size_t i = 0; i < list->LengthCFILES; i++) {
@@ -43,8 +45,7 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
         stat(tmp, &st);
 
         if (st.st_mtime > _LastAppMod) {
-            printf("Compile a %s -> %s.o\n", list->CFILES[i], list->CFILES[i]);
-
+            printf("Compile %s\n", list->CFILES[i]);
             sprintf(tmp, "gcc %s -o ymake-bin/%s.o -c", list->CFILES[i], list->CFILES[i]);
             system(tmp);
         }
@@ -54,6 +55,8 @@ void compile_gcc(YMakeList* list, char* _CurrentWDir) {
 
     sprintf(tmp, "rm %s && gcc -o %s/%s %s", list->OUT_FILE, list->OUT_DIR, list->OUT_FILE, o_files);
     system(tmp); 
+
+    printf("Success!\nOutput file --> %s/%s\n", list->OUT_DIR, list->OUT_FILE);
 
     __builtin_free(tmp); 
     __builtin_free(o_files);

@@ -1,4 +1,6 @@
-COMPILER gcc
-OUT_FILE MyAppName
+COMPILER    GCC
+OUT_FILE    app
+OUT_DIR     ymake-bin
 
-CFILE test.c
+CFILE main.c
+CFILE lib.c

@@ -5,7 +5,6 @@ int main(int argc, char* argv[]) {
         to_lower_case(argv[1]);
         if (__builtin_strcmp(argv[1], "init") == 0) {
             system("mkdir ymake-bin");
-
             return 0;
         }
     }
@@ -13,7 +12,7 @@ int main(int argc, char* argv[]) {
     char _CurrentWDir[256];
     if (getcwd(_CurrentWDir, sizeof(_CurrentWDir)) == NULL) {
        perror("getcwd() error");
-       return 1;
+       return 1; 
     }
 
     char* __YFile = read_file("YMakeList.txt");
@@ -33,7 +32,7 @@ int main(int argc, char* argv[]) {
         compile_gcc(list, _CurrentWDir);
     }
     else {
-        printf("Compiler not found or not supported\n");
+        printf("Compiler not found or not supported\n\n");
     }
 
 _free:
