@@ -29,28 +29,27 @@ int main(int argc, char* argv[]) {
     }
     closedir(dir);
 
-    YMakeList* list = read_ymakelist(__YFile);
+    YMakeList list = read_ymakelist(__YFile);
 
-    if (list->OUT_DIR == NULL) {
-        list->OUT_DIR = _CurrentWDir;
+    if (list.OUT_DIR == NULL) {
+        list.OUT_DIR = _CurrentWDir;
     }
 
-    if (list->cmpl == GCC || list->cmpl == GPP || list->cmpl == CC) {
-        compile_gxx(list, _CurrentWDir);
+    if (list.cmpl == GCC || list.cmpl == GPP || list.cmpl == CC) {
+        compile_gxx(&list, _CurrentWDir);
     }
     else {
         printf("Compiler not found or not supported\n\n");
     }
 
 _free:
-    for (size_t i = 0; i < list->LengthCFILES; i++)
-        __builtin_free(list->CFILES[i]);
+    for (size_t i = 0; i < list.LengthCFILES; i++)
+        __builtin_free(list.CFILES[i]);
     
-    if (_CurrentWDir != list->OUT_DIR)
-        __builtin_free(list->OUT_DIR);
+    if (_CurrentWDir != list.OUT_DIR)
+        __builtin_free(list.OUT_DIR);
 
-    __builtin_free(list->OUT_FILE);
-    __builtin_free(list);
+    __builtin_free(list.OUT_FILE);
 
     return 0;
 }

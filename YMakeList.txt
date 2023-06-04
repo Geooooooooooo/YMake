@@ -5,4 +5,8 @@ CFILES IN folder/a/ {
     lib.c
 }
 
+CFILES IN folder/ {
+    te.c
+}
+
 OUT_FILE app

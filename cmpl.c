@@ -34,7 +34,7 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
     tmp[0] = 0;
     o_files[0] = 0;
 
-    sprintf(tmp, "%s/%s", _CurrentWDir, list->OUT_FILE);
+    sprintf(tmp, "%s/%s", list->OUT_DIR, list->OUT_FILE);
 
     printf("Assembly started (%s) ...\n", comp);
 
@@ -85,7 +85,8 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
         sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
     }
 
-    sprintf(tmp, "rm %s && %s -o %s/%s %s", list->OUT_FILE, comp, list->OUT_DIR, list->OUT_FILE, o_files);
+    sprintf(tmp, "rm %s/%s && %s -o %s/%s %s", 
+        list->OUT_DIR, list->OUT_FILE, comp, list->OUT_DIR, list->OUT_FILE, o_files);
     errors += system(tmp); 
 
 _end:

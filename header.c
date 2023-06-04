@@ -65,23 +65,19 @@ char* read_file(char* filename) {
     return source;
 }
 
-YMakeList* read_ymakelist(char* __YFile) {
-    YMakeList* cd = (YMakeList*)__builtin_malloc((size_t)(sizeof(YMakeList)));
-    if (cd == NULL) {
+YMakeList read_ymakelist(char* __YFile) {
+    YMakeList cd;
+
+    cd.CFILES = (char**)__builtin_malloc(2 * sizeof(char**)); 
+    if (cd.CFILES == NULL) {
         puts("MemoryAllocationError");
-        return (YMakeList*)(0);
+        return cd;
     }
 
-    cd->CFILES = (char**)__builtin_malloc(sizeof(char**));
-    if (cd->CFILES == NULL) {
-        puts("MemoryAllocationError");
-        return (YMakeList*)(0);
-    }
-
-    cd->cmpl = -2;
-    cd->LengthCFILES = 0;
-    cd->OUT_FILE = NULL;
-    cd->OUT_DIR = NULL;
+    cd.cmpl = -2;
+    cd.LengthCFILES = 0;
+    cd.OUT_FILE = NULL;
+    cd.OUT_DIR = NULL;
 
     char word[1024];
     size_t sz = strlen(__YFile);
@@ -93,62 +89,62 @@ YMakeList* read_ymakelist(char* __YFile) {
         to_lower_case(word);
 
         if (__builtin_strcmp(word, "compiler") == 0) {
-            if (cd->cmpl != -2) {
+            if (cd.cmpl != -2) {
                 puts("Logical Error: reusing the COMPILER parameter\n");
-                return (YMakeList*)(0);
+                return cd;
             }
 
             next_word(__YFile, word, &cntr, sz);
             to_lower_case(word);
 
             if (__builtin_strcmp(word, "gcc") == 0) 
-                cd->cmpl = GCC;
+                cd.cmpl = GCC;
             else if (__builtin_strcmp(word, "cc") == 0) 
-                cd->cmpl = CC;
+                cd.cmpl = CC;
             else if (__builtin_strcmp(word, "g++") == 0) 
-                cd->cmpl = GPP;
+                cd.cmpl = GPP;
             else if (__builtin_strcmp(word, "clang") == 0) 
-                cd->cmpl = CLANG;
+                cd.cmpl = CLANG;
             else {
                 printf("Parameter Error: invalid argument for COMPILER %s\n", word);
-                return (YMakeList*)(0);
+                return cd;
             }
         }
         else if (__builtin_strcmp(word, "out_file") == 0) {
-            if (cd->OUT_FILE != NULL) {
+            if (cd.OUT_FILE != NULL) {
                 puts("Logical Error: reusing the OUT_FILE parameter\n");
-                return (YMakeList*)(0);
+                return cd;
             }
 
             next_word(__YFile, word, &cntr, sz);
 
-            cd->OUT_FILE = (char*)__builtin_malloc(strlen(word));
-            if (cd->OUT_FILE == NULL) {
+            cd.OUT_FILE = (char*)__builtin_malloc(strlen(word));
+            if (cd.OUT_FILE == NULL) {
                 puts("MemoryAllocationError");
-                return (YMakeList*)(0);
+                return cd;
             }
 
             register size_t tmp_sz = strlen(word);
-            for (l = 0; l < tmp_sz; l++) cd->OUT_FILE[l] = word[l];
-            cd->OUT_FILE[l++] = 0;
+            for (l = 0; l < tmp_sz; l++) cd.OUT_FILE[l] = word[l];
+            cd.OUT_FILE[l++] = 0;
         }
         else if (__builtin_strcmp(word, "out_dir") == 0) {
-            if (cd->OUT_DIR != NULL) {
+            if (cd.OUT_DIR != NULL) {
                 puts("Logical Error: reusing the OUT_DIR parameter\n");
-                return (YMakeList*)(0);
+                return cd;
             }
 
             next_word(__YFile, word, &cntr, sz);
 
-            cd->OUT_DIR = (char*)__builtin_malloc(strlen(word));
-            if (cd->OUT_DIR == NULL) {
+            cd.OUT_DIR = (char*)__builtin_malloc(strlen(word));
+            if (cd.OUT_DIR == NULL) {
                 puts("MemoryAllocationError");
-                return (YMakeList*)(0);
+                return cd;
             } 
 
             register size_t tmp_sz = strlen(word);
-            for (l = 0; l < tmp_sz; l++) cd->OUT_DIR[l] = word[l];
-            cd->OUT_DIR[l] = 0;
+            for (l = 0; l < tmp_sz; l++) cd.OUT_DIR[l] = word[l];
+            cd.OUT_DIR[l] = 0;
         }
         else if (__builtin_strcmp(word, "cfiles") == 0) {
             next_word(__YFile, word, &cntr, sz);
@@ -170,23 +166,24 @@ YMakeList* read_ymakelist(char* __YFile) {
             next_word(__YFile, word, &cntr, sz);
             while (__builtin_strcmp(word, "}") != 0) {
                 register size_t tmp_sz = strlen(word) + strlen(inc_folder);
-                cd->CFILES = (char**)__builtin_realloc(cd->CFILES, (cd->LengthCFILES+2) * sizeof(char**));
 
-                cd->CFILES[cd->LengthCFILES] = (char*)__builtin_malloc(tmp_sz * sizeof(char));
-                if (cd->CFILES[cd->LengthCFILES] == NULL) {
+                cd.CFILES = (char**)__builtin_realloc(cd.CFILES, (cd.LengthCFILES+2) * sizeof(char**));
+
+                cd.CFILES[cd.LengthCFILES] = (char*)__builtin_malloc(tmp_sz * sizeof(char));
+                if (cd.CFILES[cd.LengthCFILES] == NULL) {
                     puts("MemoryAllocationError");
-                    return (YMakeList*)(0);
+                    return cd;
                 }
                 
                 tmp_sz -= strlen(word);
-                for (l = 0; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = inc_folder[l];
+                for (l = 0; l < tmp_sz; l++) cd.CFILES[cd.LengthCFILES][l] = inc_folder[l];
                 
                 size_t k = 0;
                 tmp_sz += strlen(word);
-                for (; l < tmp_sz; l++) cd->CFILES[cd->LengthCFILES][l] = word[k++];
-                cd->CFILES[cd->LengthCFILES][l] = 0;
+                for (; l < tmp_sz; l++) cd.CFILES[cd.LengthCFILES][l] = word[k++];
+                cd.CFILES[cd.LengthCFILES][l] = 0;
 
-                ++cd->LengthCFILES;
+                ++cd.LengthCFILES;
                 
                 next_word(__YFile, word, &cntr, sz);
             }
@@ -197,8 +194,8 @@ YMakeList* read_ymakelist(char* __YFile) {
         }
     }
 
-    if (cd->cmpl == -2) {
-        cd->cmpl = (Compiler)GPP;
+    if (cd.cmpl == -2) {
+        cd.cmpl = (Compiler)GPP;
     }
 
     return cd;

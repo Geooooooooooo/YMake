@@ -27,7 +27,7 @@ typedef struct __CompileDependencies {
 } YMakeList;
 
 void next_word(char*, char*, size_t*, size_t);
-YMakeList* read_ymakelist(char*);
+YMakeList read_ymakelist(char*);
 char* read_file(char*);
 void to_lower_case(char*);
 
