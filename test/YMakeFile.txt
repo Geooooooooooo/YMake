@@ -1,0 +1,8 @@
+COMPILER GCC
+OUT_FILE MyApp
+OUT_DIR bin
+
+CFILES { main.c }
+CFILES IN headers1/ {
+   header.c
+}
