@@ -2,6 +2,8 @@ COMPILER GCC
 OUT_FILE MyApp
 OUT_DIR bin
 
+LOGS logs.txt
+
 CFILES { main.c }
 CFILES IN headers1/ {
    header.c
