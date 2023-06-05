@@ -3,10 +3,11 @@
 COMPILER GCC
 LOGS log.txt
 
-CFILES {
+CFILES IN path/to/folder/ {
     cmpl.c 
     header.c 
     ymake.c 
 }
 
 OUT_FILE ymake
+OUT_DIR path/to/output/dir
