@@ -12,6 +12,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#define YMAKE_FLAG_STD   0
+#define YMAKE_FLAG_FULL    1
+
 typedef enum __Compiler {
     Invalid, 
     GCC,    CC, 
@@ -19,10 +22,10 @@ typedef enum __Compiler {
 } Compiler;
 
 typedef struct __CompileDependencies {
-    Compiler    cmpl;
-    char        *OUT_FILE;
+   char        *OUT_FILE;
     char        *OUT_DIR;
     char        **CFILES;
+    Compiler    cmpl;
     unsigned long LengthCFILES;
     FILE        *logs;
 } YMakeList;

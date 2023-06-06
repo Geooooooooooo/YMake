@@ -9,7 +9,7 @@ char* cstr(char* s) {
     return s;
 }
 
-void compile_gxx(YMakeList* list, char* _CurrentWDir) {
+void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
     int errors = 0;
     char comp[8] = { 0 };
     char clean_file[256] = { 0 };
@@ -42,9 +42,9 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
         comp, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
     FILE* tmp_file = fopen(tmp, "rb");
-    if (tmp_file == NULL) {
+    if (tmp_file == NULL || flag == YMAKE_FLAG_FULL) {
         for (size_t i = 0; i < list->LengthCFILES; i++) {
-            printf("\nCompile %s", list->CFILES[i]);
+            fprintf(list->logs, "\nCompile %s", list->CFILES[i]);
 
             strcpy(clean_file, list->CFILES[i]);
             sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
@@ -74,15 +74,19 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir) {
     
     for (size_t i = 0; i < list->LengthCFILES; i++) {
         sprintf(tmp, "%s/%s", _CurrentWDir, list->CFILES[i]);
-
         stat(tmp, &st);
+        
+        strcpy(clean_file, list->CFILES[i]);
+        sprintf(tmp, "%s/ymake-bin/%s.o", _CurrentWDir, cstr(list->CFILES[i]));
+        register FILE* fast_check_to_exist = fopen(tmp, "rb");
 
-        if (st.st_mtime > _LastAppMod) {
-            fprintf(list->logs, "Compile %s\n", list->CFILES[i]);
+        if (st.st_mtime > _LastAppMod || fast_check_to_exist == NULL) {
+            fprintf(list->logs, "Compile %s\n", clean_file);
 
-            strcpy(clean_file, list->CFILES[i]);
             sprintf(tmp, "%s %s -o ymake-bin/%s.o -c", comp, clean_file, cstr(list->CFILES[i]));
             errors += system(tmp);
+
+            ((fast_check_to_exist != NULL) ? fclose(fast_check_to_exist) : 0);
         }
 
         sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
