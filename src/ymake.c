@@ -2,10 +2,12 @@
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
+#define YMAKE_VERSION   "1.0"
+
 int main(int argc, char* argv[]) {
     _Bool flag = YMAKE_FLAG_STD;
     _Bool f_optimizer;
-    _Bool args_status = 0;
+    _Bool args_status_f = 0;
 
     if (argc > 1) {
         int k = 1;
@@ -24,13 +26,17 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
             else if (__builtin_strcmp(argv[k], "-f") == 0 || __builtin_strcmp(argv[k], "--full") == 0) {
-                if (CHECK_BIT(args_status, 1) == 1) {
-                    printf("Warning: reusing the -f, --full argument\n");
+                if (args_status_f) {
+                    printf("Warning: reusing the [-f, --full] argument\n");
                 }
 
-                args_status |= (1 << 1);
-
+                args_status_f = 1;
                 flag = YMAKE_FLAG_FULL;
+            }
+            else if (__builtin_strcmp(argv[k], "-v") == 0 || __builtin_strcmp(argv[k], "--version") == 0) {
+                printf("ymake version: %s\n", YMAKE_VERSION);
+
+                return 0;
             }
             else if (__builtin_strcmp(argv[k], "-h") == 0 || __builtin_strcmp(argv[k], "--help") == 0) {
                 printf(
@@ -39,6 +45,7 @@ int main(int argc, char* argv[]) {
                     "  -h, --help        info about ymake options\n"
                     "  -i, --init        initialization for ymake\n"
                     "  -r, --remove      remove ymake work directory\n"
+                    "  -v, --version     version of ymake\n"
                     "Build OPTIONS:\n"
                     "  -f, --full        rebuild all project files\n"
                 );
@@ -76,9 +83,11 @@ int main(int argc, char* argv[]) {
 
     YMakeList list = read_ymakelist(__YFile);
 
-    if (list.OUT_DIR == NULL) {
+    if (list.OUT_DIR == NULL) 
         list.OUT_DIR = _CurrentWDir;
-    }
+
+    if (list.optimizer == -1) 
+        list.optimizer = 0;
 
     if (list.OUT_FILE == NULL) {
         fprintf(list.logs, "Warning: The output file is not specified, by default (y.out)\n\n");
@@ -92,12 +101,7 @@ int main(int argc, char* argv[]) {
         goto _free;
     }
 
-    if (list.cmpl == GCC || list.cmpl == GPP || list.cmpl == CC) {
-        compile_gxx(&list, _CurrentWDir, flag);
-    }
-    else {
-        fprintf(list.logs, "Error: Compiler not found or not supported\n");
-    }
+    compile_gxx(&list, _CurrentWDir, flag);
 
 _free:
     if (list.CFILES != NULL)   

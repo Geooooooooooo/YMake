@@ -13,6 +13,8 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
     int errors = 0;
     char comp[8] = { 0 };
     char clean_file[256] = { 0 };
+    char optimiz[16] = { 0 };
+
     if (list->cmpl == GCC) {
         __builtin_strcpy(comp, "gcc");
     }
@@ -21,6 +23,13 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
     }
     else if (list->cmpl == CC) {
         __builtin_strcpy(comp, "cc");
+    }
+    else if (list->cmpl == CLANG) {
+        __builtin_strcpy(comp, "clang");
+    }
+    else {
+        fprintf(list->logs, "Error: Compiler not found or not supported\n");
+        return;
     }
 
     char* tmp = (char*)__builtin_malloc(2048 * sizeof(char));
@@ -46,12 +55,13 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
         for (size_t i = 0; i < list->LengthCFILES; i++) {
             fprintf(list->logs, "\nCompile %s", list->CFILES[i]);
 
+            sprintf(optimiz, "%d", list->optimizer);
             strcpy(clean_file, list->CFILES[i]);
             sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
-            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c", comp, clean_file, cstr(list->CFILES[i]));
+            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c -O%s", 
+                comp, clean_file, cstr(list->CFILES[i]), optimiz);
 
             errors += system(tmp); 
-            //system(tmp);
         }
 
         char cmd[2048];
@@ -75,7 +85,7 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
     for (size_t i = 0; i < list->LengthCFILES; i++) {
         sprintf(tmp, "%s/%s", _CurrentWDir, list->CFILES[i]);
         stat(tmp, &st);
-        
+
         strcpy(clean_file, list->CFILES[i]);
         sprintf(tmp, "%s/ymake-bin/%s.o", _CurrentWDir, cstr(list->CFILES[i]));
         register FILE* fast_check_to_exist = fopen(tmp, "rb");
@@ -83,10 +93,16 @@ void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
         if (st.st_mtime > _LastAppMod || fast_check_to_exist == NULL) {
             fprintf(list->logs, "Compile %s\n", clean_file);
 
-            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c", comp, clean_file, cstr(list->CFILES[i]));
+            sprintf(optimiz, "%d", list->optimizer);
+            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c -O%s", 
+                comp, clean_file, cstr(list->CFILES[i]), optimiz);
+
             errors += system(tmp);
 
             ((fast_check_to_exist != NULL) ? fclose(fast_check_to_exist) : 0);
+        }
+        else {
+            fclose(fast_check_to_exist);
         }
 
         sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));

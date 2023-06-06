@@ -26,6 +26,7 @@ typedef struct __CompileDependencies {
     char        *OUT_DIR;
     char        **CFILES;
     Compiler    cmpl;
+    int         optimizer;
     unsigned long LengthCFILES;
     FILE        *logs;
 } YMakeList;

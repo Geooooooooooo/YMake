@@ -75,6 +75,7 @@ YMakeList read_ymakelist(char* __YFile) {
     cd.OUT_FILE = NULL;
     cd.OUT_DIR = NULL;
     cd.CFILES = NULL;
+    cd.optimizer = -1;
 
     char word[1024];
     size_t sz = strlen(__YFile);
@@ -115,6 +116,23 @@ YMakeList read_ymakelist(char* __YFile) {
             next_word(__YFile, word, &cntr, sz);
 
             cd.logs = fopen(word, "w+");
+        }
+        else if (__builtin_strcmp(word, "optimization") == 0) {
+            if (cd.optimizer != -1) {
+                printf("Warning: re-specification of the optimization parameter\n");
+            }
+
+            next_word(__YFile, word, &cntr, sz);
+
+            int op = atoi(word);
+            switch (op) {
+            case 0: 
+                printf("Error: invalid optimizations argument\n");
+                return cd;
+            default: 
+                cd.optimizer = op;
+                break;
+            }
         }
         else if (__builtin_strcmp(word, "out_file") == 0) {
             if (cd.OUT_FILE != NULL) {
