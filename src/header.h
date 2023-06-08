@@ -12,8 +12,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#define YMAKE_FLAG_STD   0
-#define YMAKE_FLAG_FULL    1
+#define YMAKE_FLAG_STD      0
+#define YMAKE_FLAG_FULL     1
+#define ulong               unsigned long 
 
 typedef enum __Compiler {
     Invalid, 
@@ -22,18 +23,19 @@ typedef enum __Compiler {
 } Compiler;
 
 typedef struct __CompileDependencies {
-   char        *OUT_FILE;
-    char        *OUT_DIR;
-    char        **CFILES;
-    Compiler    cmpl;
+    char        *output_file;
+    char        *output_dir;
+    char        **src_files;
+    Compiler    compiler;
     int         optimizer;
-    unsigned long LengthCFILES;
-    FILE        *logs;
+    ulong       files_length;
+    FILE        *log_file;
 } YMakeList;
 
-void next_word(char*, char*, size_t*, size_t);
-YMakeList read_ymakelist(char*);
-char* read_file(char*);
-void to_lower_case(char*);
+void        next_word(char*, char*, size_t*, size_t);
+YMakeList   read_ymakelist(char*);
+char*       read_file(char*);
+void        to_lower_case(char*);
+int         read_args(int, char**, _Bool*);
 
 #endif //__HEADER_H__

@@ -1,121 +1,101 @@
 #include "cmpl.h"
 
-char* cstr(char* s) {
+int errors = 0;
+char compiler[8] = { 0 };
+char no_changed_string[256]= { 0 };
+char optimization[16] = { 0 };
+char tmp[2048] = { 0 };
+char object_files[2048] = { 0 };
+struct stat st;
+
+char* change_string(char* s) {
     register size_t tmp_ln = strlen(s);
     while (tmp_ln) {
         if (s[tmp_ln] == '/') s[tmp_ln] = '-';
         --tmp_ln;
-    }
-    return s;
+    } return s;
 }
 
 void compile_gxx(YMakeList* list, char* _CurrentWDir, int flag) {
-    int errors = 0;
-    char comp[8] = { 0 };
-    char clean_file[256] = { 0 };
-    char optimiz[16] = { 0 };
-
-    if (list->cmpl == GCC) {
-        __builtin_strcpy(comp, "gcc");
-    }
-    else if (list->cmpl == GPP) {
-        __builtin_strcpy(comp, "g++");
-    }
-    else if (list->cmpl == CC) {
-        __builtin_strcpy(comp, "cc");
-    }
-    else if (list->cmpl == CLANG) {
-        __builtin_strcpy(comp, "clang");
-    }
+    if (list->compiler == GCC) 
+        __builtin_strcpy(compiler, "gcc");
+    else if (list->compiler == GPP)
+        __builtin_strcpy(compiler, "g++");
+    else if (list->compiler == CC)
+        __builtin_strcpy(compiler, "cc");
+    else if (list->compiler == CLANG)
+        __builtin_strcpy(compiler, "clang");
     else {
-        fprintf(list->logs, "Error: Compiler not found or not supported\n");
+        fputs("Error: Compiler not found or not supported", list->log_file);
         return;
     }
 
-    char* tmp = (char*)__builtin_malloc(2048 * sizeof(char));
-    if (tmp == NULL) 
-        return;
-
-    char* o_files = (char*)__builtin_malloc(2048 * sizeof(char));
-    if (o_files == NULL)
-        return;
-
-    tmp[0] = 0;
-    o_files[0] = 0;
-
-    sprintf(tmp, "%s/%s", list->OUT_DIR, list->OUT_FILE);
+    sprintf(tmp, "%s/%s", list->output_dir, list->output_file);
 
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    fprintf(list->logs, "Assembly started (%s) ... %d-%02d-%02d %02d:%02d:%02d\n", 
-        comp, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    fprintf(list->log_file, "Assembly started (%s) ... %d-%02d-%02d %02d:%02d:%02d\n", 
+        compiler, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
     FILE* tmp_file = fopen(tmp, "rb");
     if (tmp_file == NULL || flag == YMAKE_FLAG_FULL) {
-        for (size_t i = 0; i < list->LengthCFILES; i++) {
-            fprintf(list->logs, "\nCompile %s", list->CFILES[i]);
+        for (size_t i = 0; i < list->files_length; i++) {
+            fprintf(list->log_file, "\nCompile %s", list->src_files[i]);
 
-            sprintf(optimiz, "%d", list->optimizer);
-            strcpy(clean_file, list->CFILES[i]);
-            sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
+            sprintf(optimization, "%d", list->optimizer);
+            strcpy(no_changed_string, list->src_files[i]);
+            sprintf(object_files, "%s%s/ymake-bin/%s.o ", object_files, _CurrentWDir, change_string(list->src_files[i]));
             sprintf(tmp, "%s %s -o ymake-bin/%s.o -c -O%s", 
-                comp, clean_file, cstr(list->CFILES[i]), optimiz);
+                compiler, no_changed_string, change_string(list->src_files[i]), optimization);
 
             errors += system(tmp); 
         }
 
-        char cmd[2048];
-        sprintf(cmd, "%s -o %s/%s %s", comp, list->OUT_DIR, list->OUT_FILE, o_files);
+        sprintf(tmp, "%s -o %s/%s %s", compiler, list->output_dir, list->output_file, object_files);
 
-        errors += system(cmd); 
+        errors += system(tmp); 
 
-        fputs("", list->logs);
+        fputs("", list->log_file);
 
-       goto _end;
-    }
+    } else {
+        fclose(tmp_file);
+        sprintf(tmp, "%s/%s", list->output_dir, list->output_file);
 
-    fclose(tmp_file);
-    sprintf(tmp, "%s/%s", list->OUT_DIR, list->OUT_FILE);
-
-    struct stat st;
-    stat(tmp, &st);
-
-    long _LastAppMod = st.st_mtime;
-    
-    for (size_t i = 0; i < list->LengthCFILES; i++) {
-        sprintf(tmp, "%s/%s", _CurrentWDir, list->CFILES[i]);
         stat(tmp, &st);
 
-        strcpy(clean_file, list->CFILES[i]);
-        sprintf(tmp, "%s/ymake-bin/%s.o", _CurrentWDir, cstr(list->CFILES[i]));
-        register FILE* fast_check_to_exist = fopen(tmp, "rb");
+        long _LastAppMod = st.st_mtime;
+        
+        for (size_t i = 0; i < list->files_length; i++) {
+            sprintf(tmp, "%s/%s", _CurrentWDir, list->src_files[i]);
+            stat(tmp, &st);
 
-        if (st.st_mtime > _LastAppMod || fast_check_to_exist == NULL) {
-            fprintf(list->logs, "Compile %s\n", clean_file);
+            strcpy(no_changed_string, list->src_files[i]);
+            sprintf(tmp, "%s/ymake-bin/%s.o", _CurrentWDir, change_string(list->src_files[i]));
+            register FILE* fast_check_to_exist = fopen(tmp, "rb");
 
-            sprintf(optimiz, "%d", list->optimizer);
-            sprintf(tmp, "%s %s -o ymake-bin/%s.o -c -O%s", 
-                comp, clean_file, cstr(list->CFILES[i]), optimiz);
+            if (st.st_mtime > _LastAppMod || fast_check_to_exist == NULL) {
+                fprintf(list->log_file, "\nCompile %s", no_changed_string);
 
-            errors += system(tmp);
+                sprintf(optimization, "%d", list->optimizer);
+                sprintf(tmp, "%s %s -o ymake-bin/%s.o -c -O%s", 
+                    compiler, no_changed_string, change_string(list->src_files[i]), optimization);
 
-            ((fast_check_to_exist != NULL) ? fclose(fast_check_to_exist) : 0);
+                errors += system(tmp);
+
+                ((fast_check_to_exist != NULL) ? fclose(fast_check_to_exist) : 0);
+            }
+            else {
+                fclose(fast_check_to_exist);
+            }
+
+            sprintf(object_files, "%s%s/ymake-bin/%s.o ", object_files, _CurrentWDir, change_string(list->src_files[i]));
         }
-        else {
-            fclose(fast_check_to_exist);
-        }
 
-        sprintf(o_files, "%s%s/ymake-bin/%s.o ", o_files, _CurrentWDir, cstr(list->CFILES[i]));
+        sprintf(tmp, "rm %s/%s && %s -o %s/%s %s", 
+            list->output_dir, list->output_file, compiler, list->output_dir, list->output_file, object_files);
+        errors += system(tmp); 
     }
 
-    sprintf(tmp, "rm %s/%s && %s -o %s/%s %s", 
-        list->OUT_DIR, list->OUT_FILE, comp, list->OUT_DIR, list->OUT_FILE, o_files);
-    errors += system(tmp); 
-
-_end:
     if (!errors)
-        fprintf(list->logs, "\nOutput file --> %s/%s\n", list->OUT_DIR, list->OUT_FILE);
-
-    __builtin_free(tmp); 
-    __builtin_free(o_files);
+        fprintf(list->log_file, "\nOutput file --> %s/%s\n", list->output_dir, list->output_file);
 }
